@@ -32,24 +32,27 @@ client = OpenAI(
     base_url="https://generativelanguage.googleapis.com/v1beta/openai/"
 )
 
-response = client.chat.completions.create(
-    model="gemini-3.5-flash",
-    messages=[
-        {"role": "system", "content": "You are a helpful assistant."},
-        {
-            "role": "user",
-            "content": "Explain to me how vibe coding is in a few words"
-        }
-    ]
-)
+# response = client.chat.completions.create(
+#     model="gemini-3.5-flash",
+#     messages=[
+#         {"role": "system", "content": "You are a helpful assistant."},
+#         {
+#             "role": "user",
+#             "content": "Explain to me how vibe coding is in a few words"
+#         }
+#     ]
+# )
 
-if response.choices[0]:
-    print(response.choices[0].message.content)
+# if response.choices[0]:
+#     print(response.choices[0].message.content)
 
 # Let's create a more interactive example
 def chat_with_gemini(max_user_turns:int = 5):
     messages=[
-            {"role": "system", "content": "You are a helpful assistant."},
+            {"role": "system", "content": "You are a helpful assistant. Today's date is Friday July 17th. "
+            "all of your answers should be concise and short, like a conversation, but should not be missing any information"
+            "additionally, the current finalists of the world cup this year are spain (who beat france) and argentina (who beat england) "
+            "you should not be talking about any of these things unless asked about it though"},
         ]
     count=0
     client = OpenAI(

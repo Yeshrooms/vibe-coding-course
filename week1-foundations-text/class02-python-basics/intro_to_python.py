@@ -30,8 +30,7 @@
 
 # Defining variables 
 
-name = "Alex"
-favorite_color = "blue"
+name = "Daniel"
 age = 16
 height = 5.8
 is_student = True
@@ -41,13 +40,14 @@ is_student = True
 
 
 # Printing output
+favorite_color = input("What's your facvorite color?\n")
+age = int(input("What's your age?\n"))
 
-print(f"Hi, I'm {name}! I'm {age} years old.")
+
+print(f"Hi, I'm {name}! I'm {age} years old and their favorite color is {favorite_color}")
 
 
 # In[ ]:
-
-
 if is_student:
     print(f'and {name} is a Student 🧑‍🎓')
 else:
@@ -61,6 +61,7 @@ else:
 
 my_name = input("What's your name:\n")
 print(f'Hi {my_name}!')
+
 
 
 # ## Lists

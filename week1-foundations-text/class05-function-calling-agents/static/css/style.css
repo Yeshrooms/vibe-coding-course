@@ -1,0 +1,905 @@
+/* 
+   AI WORDLE GAME MASTER — DESIGN SYSTEM
+   Theme: Cyberpunk Minimalist / Sleek Dark Glassmorphism
+   Typography: Outfit (UI), JetBrains Mono (Code/AI Brain Logs)
+*/
+
+:root {
+    /* Color Palette */
+    --bg-main: #060913;
+    --bg-card: rgba(13, 18, 33, 0.75);
+    --border-color: rgba(255, 255, 255, 0.08);
+    --border-glow: rgba(59, 130, 246, 0.4);
+    
+    /* Wordle State Colors (Premium Glossy Versions) */
+    --color-correct: #10b981;    /* Emerald green */
+    --color-present: #f59e0b;    /* Amber yellow */
+    --color-absent: #374151;     /* Charcoal gray */
+    --color-empty: #1e293b;      /* Slate border */
+    --color-active: #3b82f6;      /* Electric neon blue */
+    
+    /* Typography & Sizing */
+    --font-ui: 'Outfit', sans-serif;
+    --font-mono: 'JetBrains Mono', monospace;
+    --text-primary: #f8fafc;
+    --text-secondary: #94a3b8;
+    --text-muted: #64748b;
+    --shadow-neon: 0 0 20px rgba(59, 130, 246, 0.25);
+    --radius-large: 16px;
+    --radius-medium: 10px;
+}
+
+/* Base Resets & Global Layout */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    background-color: var(--bg-main);
+    color: var(--text-primary);
+    font-family: var(--font-ui);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    overflow-x: hidden;
+    position: relative;
+}
+
+/* Add a subtle background radial glow */
+body::before {
+    content: '';
+    position: absolute;
+    width: 600px;
+    height: 600px;
+    background: radial-gradient(circle, rgba(59, 130, 246, 0.08) 0%, rgba(0, 0, 0, 0) 70%);
+    top: -100px;
+    left: -100px;
+    z-index: -1;
+    pointer-events: none;
+}
+
+body::after {
+    content: '';
+    position: absolute;
+    width: 600px;
+    height: 600px;
+    background: radial-gradient(circle, rgba(16, 185, 129, 0.05) 0%, rgba(0, 0, 0, 0) 70%);
+    bottom: -100px;
+    right: -100px;
+    z-index: -1;
+    pointer-events: none;
+}
+
+/* App Wrapper */
+.app-container {
+    max-width: 1400px;
+    width: 100%;
+    margin: 0 auto;
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+/* Header Styling */
+.app-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 20px;
+    margin-bottom: 24px;
+}
+
+.logo-area {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.logo-emoji {
+    font-size: 2.2rem;
+    animation: pulse 2.5s infinite ease-in-out;
+}
+
+h1 {
+    font-weight: 800;
+    font-size: 1.8rem;
+    letter-spacing: -0.5px;
+}
+
+.accent-text {
+    background: linear-gradient(135deg, #3b82f6, #10b981);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.header-controls {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.status-pill {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--border-color);
+    padding: 8px 16px;
+    border-radius: 50px;
+    font-weight: 600;
+    font-size: 0.9rem;
+    letter-spacing: 0.5px;
+    color: var(--text-secondary);
+}
+
+/* Buttons */
+.btn {
+    font-family: var(--font-ui);
+    font-weight: 600;
+    font-size: 0.95rem;
+    padding: 10px 20px;
+    border-radius: var(--radius-medium);
+    border: none;
+    cursor: pointer;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #1e293b, #0f172a);
+    color: var(--text-primary);
+    border: 1px solid var(--border-color);
+}
+
+.btn-primary:hover {
+    background: linear-gradient(135deg, #334155, #1e293b);
+    border-color: rgba(255, 255, 255, 0.2);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.btn-glow {
+    background: linear-gradient(135deg, #3b82f6, #10b981);
+    color: #fff;
+    box-shadow: 0 0 15px rgba(59, 130, 246, 0.4);
+}
+
+.btn-glow:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 0 25px rgba(59, 130, 246, 0.6);
+}
+
+.btn-large {
+    padding: 14px 28px;
+    font-size: 1.1rem;
+    font-weight: 800;
+    border-radius: 12px;
+}
+
+/* Main Grid Layout */
+.game-layout {
+    display: grid;
+    grid-template-columns: 1.2fr 1fr;
+    gap: 32px;
+    flex-grow: 1;
+    align-items: stretch;
+}
+
+/* ========================================== */
+/* LEFT COLUMN: THE GAME BOARD */
+/* ========================================== */
+.game-section {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 24px;
+}
+
+.board-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-grow: 1;
+}
+
+.board-grid {
+    display: grid;
+    grid-template-rows: repeat(6, 1fr);
+    gap: 8px;
+    max-width: 340px;
+    width: 100%;
+}
+
+.board-row {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 8px;
+}
+
+/* 3D Tile Flip Architecture */
+.tile {
+    aspect-ratio: 1 / 1;
+    perspective: 1000px;
+    user-select: none;
+}
+
+.tile-inner {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    text-align: center;
+    transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+    transform-style: preserve-3d;
+}
+
+.tile.flipped .tile-inner {
+    transform: rotateY(180deg);
+}
+
+.tile-front, .tile-back {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    backface-visibility: hidden;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 2rem;
+    font-weight: 800;
+    border-radius: var(--radius-medium);
+    text-transform: uppercase;
+}
+
+.tile-front {
+    background: rgba(30, 41, 59, 0.2);
+    border: 2px solid var(--color-empty);
+    color: var(--text-primary);
+    transition: border-color 0.15s ease, background 0.15s ease;
+}
+
+/* Active typing state border */
+.tile.active .tile-front {
+    border-color: var(--color-active);
+    box-shadow: 0 0 10px rgba(59, 130, 246, 0.2);
+    background: rgba(59, 130, 246, 0.05);
+}
+
+.tile-back {
+    transform: rotateY(180deg);
+    color: #ffffff;
+}
+
+/* Tile back colors based on outcomes */
+.tile-back.green {
+    background: var(--color-correct);
+    box-shadow: 0 0 15px rgba(16, 185, 129, 0.2);
+}
+
+.tile-back.yellow {
+    background: var(--color-present);
+    box-shadow: 0 0 15px rgba(245, 158, 11, 0.2);
+}
+
+.tile-back.gray {
+    background: var(--color-absent);
+}
+
+/* On-Screen Keyboard */
+.keyboard-container {
+    background: rgba(15, 23, 42, 0.3);
+    border: 1px solid var(--border-color);
+    padding: 16px;
+    border-radius: var(--radius-large);
+    max-width: 540px;
+    margin: 0 auto;
+    width: 100%;
+}
+
+.keyboard-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.keyboard-row {
+    display: flex;
+    justify-content: center;
+    gap: 6px;
+    touch-action: manipulation;
+}
+
+.key {
+    font-family: var(--font-ui);
+    font-weight: 700;
+    font-size: 0.95rem;
+    height: 48px;
+    border-radius: 6px;
+    border: none;
+    background: #1e293b;
+    color: var(--text-primary);
+    cursor: pointer;
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transition: background-color 0.15s, transform 0.05s;
+    user-select: none;
+}
+
+.key:hover {
+    background: #334155;
+}
+
+.key:active {
+    transform: scale(0.95);
+}
+
+.key.wide-key {
+    flex: 1.5;
+    font-size: 0.8rem;
+    font-weight: 800;
+    background: #334155;
+}
+
+/* Live key highlighting styles */
+.key.green { background: var(--color-correct); }
+.key.green:hover { background: #059669; }
+
+.key.yellow { background: var(--color-present); }
+.key.yellow:hover { background: #d97706; }
+
+.key.gray { background: var(--color-absent); color: var(--text-muted); }
+.key.gray:hover { background: #1f2937; }
+
+
+/* ========================================== */
+/* RIGHT COLUMN: AI BRAIN ACTIVITY */
+/* ========================================== */
+.brain-section {
+    display: flex;
+}
+
+.brain-card {
+    background: var(--bg-card);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-large);
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+    box-shadow: var(--shadow-neon);
+}
+
+.brain-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 16px;
+    margin-bottom: 18px;
+}
+
+.pulse-indicator {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background-color: var(--color-active);
+    box-shadow: 0 0 10px var(--color-active);
+    animation: indicator-pulse 2s infinite;
+}
+
+.brain-title {
+    font-size: 1.15rem;
+    font-weight: 700;
+    letter-spacing: 0.25px;
+}
+
+/* Console Logs Panel */
+.console-wrapper {
+    background: #020617;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: var(--radius-medium);
+    padding: 16px;
+    font-family: var(--font-mono);
+    font-size: 0.85rem;
+    height: 340px;
+    overflow-y: auto;
+    margin-bottom: 18px;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255, 255, 255, 0.1) transparent;
+}
+
+/* Custom Scrollbar */
+.console-wrapper::-webkit-scrollbar {
+    width: 6px;
+}
+.console-wrapper::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+}
+
+.console-logs {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.log-entry {
+    line-height: 1.5;
+    animation: fade-in 0.3s ease-out forwards;
+}
+
+.log-timestamp {
+    color: var(--text-muted);
+    margin-right: 8px;
+    font-size: 0.75rem;
+}
+
+.log-badge {
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 0.7rem;
+    font-weight: 700;
+    margin-right: 8px;
+    letter-spacing: 0.5px;
+}
+
+/* Dynamic Log Entry States */
+.log-entry.system .log-badge {
+    background: rgba(148, 163, 184, 0.15);
+    color: #cbd5e1;
+}
+
+.log-entry.thought {
+    color: #c084fc; /* soft neon violet */
+}
+.log-entry.thought .log-badge {
+    background: rgba(192, 132, 252, 0.15);
+    color: #c084fc;
+}
+
+.log-entry.tool_call {
+    color: #f59e0b; /* yellow/wrench */
+}
+.log-entry.tool_call .log-badge {
+    background: rgba(245, 158, 11, 0.15);
+    color: #f59e0b;
+}
+
+.log-entry.tool_response {
+    color: #10b981; /* green/checkmark */
+}
+.log-entry.tool_response .log-badge {
+    background: rgba(16, 185, 129, 0.15);
+    color: #10b981;
+}
+
+.log-entry.text {
+    color: #60a5fa; /* light neon blue */
+}
+.log-entry.text .log-badge {
+    background: rgba(96, 165, 250, 0.15);
+    color: #60a5fa;
+}
+
+/* AI Speech Bubble */
+.chat-wrapper {
+    display: flex;
+    gap: 14px;
+    background: rgba(59, 130, 246, 0.05);
+    border: 1px solid rgba(59, 130, 246, 0.1);
+    padding: 16px;
+    border-radius: var(--radius-medium);
+    margin-top: auto;
+}
+
+.chat-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #3b82f6, #10b981);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 1.3rem;
+    flex-shrink: 0;
+}
+
+.chat-bubble {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.chat-sender {
+    font-weight: 700;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: #60a5fa;
+}
+
+.chat-message {
+    font-size: 0.95rem;
+    line-height: 1.5;
+    color: var(--text-primary);
+}
+
+
+/* ========================================== */
+/* OVERLAYS & MODALS */
+/* ========================================== */
+.modal-overlay {
+    position: fixed;
+    inset: 0;
+    background-color: rgba(2, 6, 23, 0.85);
+    backdrop-filter: blur(8px);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    opacity: 1;
+    transition: opacity 0.3s ease;
+}
+
+.modal-card {
+    background: #0f172a;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 20px;
+    max-width: 500px;
+    width: 90%;
+    padding: 36px;
+    text-align: center;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5), 0 0 30px rgba(59, 130, 246, 0.15);
+    transform: scale(1);
+    transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.modal-emoji {
+    font-size: 3.5rem;
+    margin-bottom: 12px;
+}
+
+.modal-stats {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin: 24px 0;
+}
+
+.stat-box {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    padding: 14px;
+    border-radius: var(--radius-medium);
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.stat-label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    color: var(--text-muted);
+}
+
+.stat-value {
+    font-size: 1.5rem;
+    font-weight: 800;
+}
+
+.stat-value.highlight {
+    color: var(--color-correct);
+    letter-spacing: 2px;
+}
+
+.modal-critic-bubble {
+    background: rgba(255, 255, 255, 0.05);
+    border-left: 4px solid var(--color-active);
+    padding: 16px;
+    border-radius: 0 12px 12px 0;
+    text-align: left;
+    margin-bottom: 28px;
+}
+
+.critic-title {
+    font-size: 0.8rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: var(--text-secondary);
+    margin-bottom: 4px;
+}
+
+.critic-text {
+    font-size: 0.95rem;
+    line-height: 1.45;
+    font-style: italic;
+    color: var(--text-primary);
+}
+
+/* Loading Overlay Spinner */
+.loading-overlay {
+    position: fixed;
+    inset: 0;
+    background-color: rgba(2, 6, 23, 0.7);
+    backdrop-filter: blur(4px);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 999;
+}
+
+.spinner-container {
+    text-align: center;
+}
+
+.neon-spinner {
+    width: 50px;
+    height: 50px;
+    border: 3px solid rgba(59, 130, 246, 0.1);
+    border-top: 3px solid var(--color-active);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    margin: 0 auto 16px;
+    box-shadow: 0 0 15px rgba(59, 130, 246, 0.3);
+}
+
+.loading-text {
+    font-size: 0.95rem;
+    color: var(--text-secondary);
+    font-weight: 600;
+    letter-spacing: 0.5px;
+}
+
+/* Utility visibility classes */
+.hidden {
+    opacity: 0;
+    pointer-events: none;
+    display: none !important;
+}
+
+
+/* ========================================== */
+/* ANIMATIONS & TRANSITIONS */
+/* ========================================== */
+
+@keyframes pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.1); filter: drop-shadow(0 0 8px rgba(59, 130, 246, 0.4)); }
+}
+
+@keyframes indicator-pulse {
+    0% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.7); }
+    70% { box-shadow: 0 0 0 8px rgba(59, 130, 246, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0); }
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+@keyframes fade-in {
+    from { opacity: 0; transform: translateY(4px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Wobble / Shake effect for bad inputs */
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    15%, 45%, 75% { transform: translateX(-8px); }
+    30%, 60%, 90% { transform: translateX(8px); }
+}
+.shake {
+    animation: shake 0.5s ease-in-out;
+}
+
+/* Success Bounce for winning tiles */
+@keyframes bounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-20px); }
+}
+.bounce {
+    animation: bounce 0.5s ease-in-out;
+}
+
+
+/* ========================================== */
+/* RESPONSIVE LAYOUT adjustments */
+/* ========================================== */
+
+@media (max-width: 1024px) {
+    .game-layout {
+        grid-template-columns: 1fr;
+        gap: 24px;
+    }
+    
+    .console-wrapper {
+        height: 240px;
+    }
+}
+
+@media (max-width: 600px) {
+    .app-container {
+        padding: 12px;
+    }
+    
+    .app-header {
+        flex-direction: column;
+        gap: 12px;
+        align-items: stretch;
+        text-align: center;
+    }
+    
+    .logo-area {
+        justify-content: center;
+    }
+    
+    .header-controls {
+        justify-content: space-between;
+    }
+    
+    .tile-front, .tile-back {
+        font-size: 1.5rem;
+    }
+    
+    .key {
+        height: 40px;
+        font-size: 0.8rem;
+    }
+}
+
+/* ========================================== */
+/* ADVANCED PREMIUM INTERACTIVE EFFECTS */
+/* ========================================== */
+
+/* Collapsible System Prompt Inspector Card */
+.prompt-inspector-panel {
+    background: rgba(15, 23, 42, 0.6);
+    border: 1px dashed rgba(59, 130, 246, 0.25);
+    border-radius: var(--radius-medium);
+    padding: 14px;
+    margin-bottom: 18px;
+    transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+    max-height: 220px;
+    overflow-y: auto;
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.prompt-inspector-panel.collapsed {
+    max-height: 0;
+    padding-top: 0;
+    padding-bottom: 0;
+    margin-bottom: 0;
+    border-color: transparent;
+    opacity: 0;
+    pointer-events: none;
+    transform: translateY(-8px);
+}
+
+.prompt-inspector-title {
+    font-size: 0.72rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    color: #60a5fa;
+    margin-bottom: 6px;
+    letter-spacing: 0.75px;
+}
+
+.prompt-inspector-content {
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    line-height: 1.45;
+    color: var(--text-secondary);
+    white-space: pre-wrap;
+}
+
+/* Mini outline buttons for active inspections */
+.btn-sm {
+    padding: 6px 12px;
+    font-size: 0.78rem;
+    border-radius: 6px;
+}
+
+.btn-outline {
+    background: rgba(30, 41, 59, 0.4);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    color: var(--text-secondary);
+}
+
+.btn-outline:hover {
+    background: rgba(59, 130, 246, 0.12);
+    border-color: var(--color-active);
+    color: var(--text-primary);
+    box-shadow: 0 0 10px rgba(59, 130, 246, 0.2);
+}
+
+/* Visual active typing tile border-sweep */
+.board-row.current-row {
+    position: relative;
+}
+
+/* Keyboard keys neat micro-ripple effect */
+.key:active {
+    background-color: var(--color-active);
+    box-shadow: 0 0 12px var(--color-active);
+    color: #fff;
+    transform: scale(0.92);
+}
+
+/* Typographic enhancements & highlights */
+.tile-back.green {
+    text-shadow: 0 0 8px rgba(255, 255, 255, 0.5);
+    background: linear-gradient(135deg, #10b981, #047857);
+}
+
+.tile-back.yellow {
+    text-shadow: 0 0 8px rgba(255, 255, 255, 0.5);
+    background: linear-gradient(135deg, #f59e0b, #b45309);
+}
+
+/* Sparkle particles spawned when keys are pressed */
+.sparkle-particle {
+    position: absolute;
+    width: 6px;
+    height: 6px;
+    background: radial-gradient(circle, #60a5fa 0%, rgba(255,255,255,0) 80%);
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 9999;
+    animation: sparkle-explode 0.6s cubic-bezier(0.1, 0.8, 0.3, 1) forwards;
+}
+
+@keyframes sparkle-explode {
+    0% {
+        transform: translate(0, 0) scale(1);
+        opacity: 1;
+    }
+    100% {
+        transform: translate(var(--tx), var(--ty)) scale(0.1);
+        opacity: 0;
+    }
+}
+
+/* Custom styles for the shake state red flash overlay */
+.shake .tile-front {
+    border-color: #ef4444 !important;
+    box-shadow: 0 0 12px rgba(239, 68, 68, 0.4) !important;
+    background: rgba(239, 68, 68, 0.05) !important;
+}
+
+/* Breathing pulse animations for colored QWERTY keys */
+.key.green {
+    animation: pulse-green-breath 2.5s infinite ease-in-out;
+}
+
+.key.yellow {
+    animation: pulse-yellow-breath 2.5s infinite ease-in-out;
+}
+
+@keyframes pulse-green-breath {
+    0%, 100% {
+        box-shadow: 0 0 4px rgba(16, 185, 129, 0.2);
+    }
+    50% {
+        box-shadow: 0 0 14px rgba(16, 185, 129, 0.75);
+    }
+}
+
+@keyframes pulse-yellow-breath {
+    0%, 100% {
+        box-shadow: 0 0 4px rgba(245, 158, 11, 0.2);
+    }
+    50% {
+        box-shadow: 0 0 14px rgba(245, 158, 11, 0.75);
+    }
+}
+
+

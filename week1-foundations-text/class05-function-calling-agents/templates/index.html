@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="AI Wordle Game Master: An intelligent Wordle game driven by Gemini's agentic loop and function calling.">
+    <title>AI Wordle Game Master — 🟩🟨⬜</title>
+    
+    <!-- Premium Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,400;0,700;1,400&family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+    
+    <!-- Custom Style Sheet -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}?v=1.3">
+    
+    <!-- Canvas Confetti Library for Victory Celebration -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Main Application Header -->
+        <header class="app-header">
+            <div class="logo-area">
+                <span class="logo-emoji">🧠</span>
+                <h1 id="main-title">AI Wordle <span class="accent-text">Game Master</span></h1>
+            </div>
+            <div class="header-controls">
+                <!-- Sound Mute and Hint Buttons -->
+                <button class="btn btn-outline" id="btn-toggle-sound" onclick="toggleMute()" title="Toggle Sound Effects" style="font-size: 1.1rem; padding: 6px 12px;">
+                    🔊
+                </button>
+                <button class="btn btn-outline" id="btn-ask-hint" onclick="askForHint()" title="Request Advisor Hint from Gemini" style="font-size: 0.85rem; padding: 8px 14px; font-weight: 600;">
+                    💡 Ask for Hint
+                </button>
+                <div class="status-pill" id="guess-counter">Guess 1 / 6</div>
+                <button class="btn btn-primary" id="btn-new-game" onclick="startNewGame()">
+                    <span class="btn-icon">🔄</span> New Game
+                </button>
+            </div>
+        </header>
+
+        <!-- Main Workspace Layout -->
+        <main class="game-layout">
+            <!-- Left Column: The Wordle Game Board & Keyboard -->
+            <section class="game-section" aria-label="Wordle Game Board">
+                <!-- Board Grid -->
+                <div class="board-container">
+                    <div id="wordle-board" class="board-grid">
+                        <!-- 6 Rows of 5 letters generated dynamically by JavaScript -->
+                    </div>
+                </div>
+
+                <!-- On-Screen Keyboard -->
+                <div class="keyboard-container">
+                    <div id="qwerty-keyboard" class="keyboard-grid">
+                        <!-- Key rows generated dynamically by JavaScript -->
+                    </div>
+                </div>
+            </section>
+
+            <!-- Right Column: AI Agent Brain Visualizer Side-Dock -->
+            <section class="brain-section" aria-label="AI Brain Activity Console">
+                <div class="brain-card">
+                    <!-- The header of the AI panel, equipped with a visual pulsing activity monitor -->
+                    <div class="brain-header">
+                        <div class="header-left">
+                            <div class="pulse-indicator"></div>
+                            <h2 class="brain-title">🧠 AI Agent Brain Activity</h2>
+                        </div>
+                        <!-- A neat educational feature letting players inspect the exact system prompt rules -->
+                        <button class="btn btn-sm btn-outline" id="btn-toggle-prompt" onclick="togglePromptInspector()">
+                            📋 Inspect Prompt
+                        </button>
+                    </div>
+                    
+                    <!-- Collapsible Prompt Inspector: Teaches players about the system prompt instructions -->
+                    <div id="prompt-inspector" class="prompt-inspector-panel collapsed">
+                        <div class="prompt-inspector-title">Active System Prompt (Standing Instructions)</div>
+                        <p id="prompt-text" class="prompt-inspector-content">Initializing agent context...</p>
+                    </div>
+                    
+                    <!-- Console Terminal for Live Logs -->
+                    <div class="console-wrapper">
+                        <div id="brain-console" class="console-logs">
+                            <div class="log-entry system">
+                                <span class="log-timestamp">[18:05:00]</span>
+                                <span class="log-badge">SYSTEM</span>
+                                <span class="log-text">System initialized. Click "New Game" or start typing to begin the agentic loop.</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- AI Conversational Output Bubble -->
+                    <div class="chat-wrapper">
+                        <div class="chat-avatar">
+                            <span class="avatar-icon">🤖</span>
+                        </div>
+                        <div class="chat-bubble">
+                            <div class="chat-sender">AI Game Master</div>
+                            <p id="ai-response-text" class="chat-message">Waiting for a new game to begin...</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Game Over Modal Overlay -->
+    <div id="game-over-modal" class="modal-overlay hidden">
+        <div class="modal-card">
+            <div class="modal-emoji" id="modal-emoji">🎉</div>
+            <h2 id="modal-title">Victory!</h2>
+            
+            <div class="modal-stats">
+                <div class="stat-box">
+                    <span class="stat-label">Guesses Used</span>
+                    <span class="stat-value" id="modal-stat-guesses">4 / 6</span>
+                </div>
+                <div class="stat-box">
+                    <span class="stat-label">Secret Word</span>
+                    <span class="stat-value highlight" id="modal-stat-word">CRANE</span>
+                </div>
+            </div>
+
+            <div class="modal-critic-bubble">
+                <div class="critic-title">Game Master's Critique:</div>
+                <p id="modal-critique-text" class="critic-text">"An absolute masterpiece of logical deductuion! You parsed my green tiles with surgical accuracy."</p>
+            </div>
+
+            <button class="btn btn-large btn-glow" onclick="startNewGame(); closeModal();">Play Again</button>
+        </div>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div id="loading-spinner" class="loading-overlay hidden">
+        <div class="spinner-container">
+            <div class="neon-spinner"></div>
+            <p class="loading-text">AI Game Master is thinking...</p>
+        </div>
+    </div>
+
+    <!-- Client-Side Javascript -->
+    <script src="{{ url_for('static', filename='js/game.js') }}?v=1.3"></script>
+</body>
+</html>

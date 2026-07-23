@@ -1,0 +1,19 @@
+# Class 5 — Function Calling & Agentic Loops (build it with Antigravity!)
+#
+# You will VIBE CODE a web app with Antigravity, so Antigravity may add its own
+# libraries as it builds. These are the ones this assignment usually needs — the main
+# course requirements.txt (in the project's root folder) already installs all of them:
+#
+#     conda activate gset-vibes
+#     pip install -r requirements.txt      # run from the project's ROOT folder
+#
+# If you ever need to install just these on their own, from THIS folder run:
+#
+#     pip install -r requirements.txt
+
+openai>=1.93.0           # Talk to Gemini via its OpenAI-compatible endpoint (great for tools)
+google-genai>=2.11.0     # The Gemini SDK (either library works for function calling)
+python-dotenv>=1.1.1     # Loads your GEMINI_API_KEY from the .env file
+flask>=3.0.0             # Tiny web server to run your app in the browser
+flask-cors>=4.0.0        # Lets your web page talk to your Flask backend
+requests>=2.32.4         # For calling free web APIs (e.g. the no-key weather API)
